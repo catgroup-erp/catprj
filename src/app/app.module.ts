@@ -11,7 +11,10 @@ import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-l
 import { StartPageComponent } from './pages/start-page/start-page.component';
 import { AppRoutingModule } from './app.routing';
 
+import { HttpClientModule } from '@angular/common/http';
+
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -23,6 +26,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    FormsModule,
+    HttpClientModule,
     NgbModule.forRoot(),
     AppRoutingModule
   ],

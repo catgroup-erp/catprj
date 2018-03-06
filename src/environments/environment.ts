@@ -4,5 +4,7 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  orclserver: 'http://192.168.17.2:1521',
+  phpserver: 'http://192.168.17.7:80/catprj/api'
 };
