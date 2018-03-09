@@ -1,0 +1,33 @@
+.sidenav-container {
+  position: absolute;
+  top: 56px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.sidenav {
+  height:100%;
+  width:250px;
+  background-color: lightgray;
+  float:left;
+  padding:10px;
+  z-index: 0;
+}
+
+.sidenav-content {
+  width:auto;
+  height:100%;
+  overflow:auto;
+}
+
+.sidenav-container .nav-link:not(.active){
+  background-color: white;
+}
+
+.sidenav-container .nav-link {
+  margin-bottom:10px;
+}
+
+
+  

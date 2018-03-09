@@ -1,7 +1,12 @@
 <div class="text-center login-container">
   <form #loginForm="ngForm" (ngSubmit)="submit(loginForm)" class="form-signin">
-    <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+    <img class="mb-4" [src]="catLogoUrl" alt="" width="72" height="72">
     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+    <p class="text-left">
+      <ngb-alert type="danger" [dismissible]="fales" *ngIf="invalidLogin">
+        <strong>Warning!</strong> {{ message }}
+      </ngb-alert>
+    </p>
     <label for="inputEmail" class="sr-only">Email address</label>
     <input ngModel name="username" type="text" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
     <label for="inputPassword" class="sr-only">Password</label>

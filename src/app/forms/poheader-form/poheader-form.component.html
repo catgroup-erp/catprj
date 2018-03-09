@@ -1,0 +1,122 @@
+<div [@fade]="response.status>=0? 'in':'out'" class="alert" [class.alert-danger]="response.status==1" [class.alert-success]="response.status==0"
+  role="alert">
+  {{ response.message }}
+</div>
+<form #poForm="ngForm" (ngSubmit)="submit(poForm)">
+  <div class="form-row">
+    <div class="form-group col-lg-12">
+      <button [disabled]="!poForm.form.valid || layouts.length==0 || layoutData.length==0" type="submit" class="btn btn-primary btn-block">Save</button>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-lg-4">
+      <label for="warea">Area</label>
+      <select required [(ngModel)]="model.area" name="warea" class="custom-select" id="warea" (change)="areaChangeTrigger()">
+        <option selected value="">Choose Area</option>
+        <option *ngFor="let area of areas" [value]="area.value">
+          {{ area.label }}
+        </option>
+      </select>
+
+    </div>
+    <div class="form-group col-lg-8">
+      <label for="wprojid">Project</label>
+      <select required [(ngModel)]="model.projid" name="wprojid" class="custom-select" id="wprojid" (change)="updateWBSList()">
+        <option selected [ngValue]="null">Choose Project</option>
+        <option *ngFor="let project of projects" [ngValue]="project.PR_PROJID">
+          {{ project.PR_DESC }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+
+
+  <div class="form-row">
+    <div class="form-group col-md-6 col-lg-8">
+      <label for="wplan">Plan</label>
+      <select required [(ngModel)]="model.plan" name="wplan" class="custom-select" id="wplan">
+        <option selected [ngValue]="null">Choose Plan</option>
+        <option *ngFor="let plan of plans" [ngValue]="plan.PH_PLAN">
+          {{ plan.PH_DESC }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group col-md-6 col-lg-4">
+      <legend class="col-form-label">Types</legend>
+      <mat-radio-group class="mat-radio-group" name="wtype" [(ngModel)]="model.type">
+        <mat-radio-button class="mat-radio-button" *ngFor="let ohType of ohTypes;index as i;" [value]="ohType.code">
+          {{ohType.desc}}
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-lg-3">
+      <label for="wref">P.O. Number</label>
+      <input required #wref="ngModel" [(ngModel)]="model.ref" maxlength="60" type="text" class="form-control" name="wref" id="wref">
+      <div [hidden]="wref.valid || wref.pristine" class="alert alert-danger" style="position:absolute;">
+        P.O. Number is required
+      </div>
+    </div>
+    <div class="form-group col-lg-6">
+      <label for="wwbs">WBS</label>
+      <select required [(ngModel)]="model.wbs" name="wwbs" class="custom-select" id="wwbs">
+        <option selected [ngValue]="null">Choose WBS</option>
+        <option *ngFor="let wbs of wbss" [ngValue]="wbs.WB_WBS">
+          {{ wbs.WB_WBSDESC }}
+        </option>
+      </select>
+    </div>
+    <div class="form-group col-lg-2">
+      <label for="wperiod">Period</label>
+      <input required [(ngModel)]="model.period" minlength="6" name="wperiod" mask='9999/99' placeholder="YYYY/MM" type="text"
+        class="form-control" id="wperiod">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-lg-3">
+      <label for="wlayout">Layout</label>
+      <select required [(ngModel)]="model.layout" name="wlayout" class="custom-select" id="wlayout">
+        <option selected [ngValue]="null">Choose Layout</option>
+        <option *ngFor="let layout of layouts | filterLayoutHeaders" [ngValue]="layout.PL_LAYOUT">
+          {{ layout.PL_DESC }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-lg-6">
+      <label for="wdesc">Description</label>
+      <textarea maxlength="250" [(ngModel)]="model.desc" class="form-control" id="wdesc" name="wdesc" rows="3"></textarea>
+    </div>
+  </div>
+
+</form>
+
+<div class="row mt-3" [hidden]="!poForm.form.valid">
+  <div class="form-group col-lg-3">
+    <input (change)="layoutdata.value=''" #layoutdata (paste)="clip($event)" type="text" class="form-control" id="layoutdata" placeholder="Paste EXCEL data here">
+  </div>
+</div>
+
+<div class="row" *ngIf="layouts.length>0 && layoutData.length>0">
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th class="text-center" *ngFor="let headCol of layouts | filterLayoutCols: model.layout">{{ headCol.PL_DESC }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of layoutData;index as i">
+          <td *ngFor="let col of layoutData[i]" [class.text-right]="col | isNumber">{{ col }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

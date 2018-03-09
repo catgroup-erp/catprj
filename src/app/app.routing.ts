@@ -16,7 +16,7 @@ export const routes: Routes = [
     component: DashboardLayoutComponent,
     canActivate: [AuthGaurdService],
     children: [
-      { path: '', component: StartPageComponent, pathMatch: 'full' }
+      { path: '', component: StartPageComponent }
     ]
   }
 
