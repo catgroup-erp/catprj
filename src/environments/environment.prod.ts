@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  orclserver: 'http://192.168.17.2',
-  phpserver: 'http://192.168.17.7:80/catprj/api'
+  orclserver: 'http://35.176.40.51',
+  phpserver: './api'
 };

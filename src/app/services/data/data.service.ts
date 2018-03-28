@@ -1,5 +1,5 @@
 import { environment } from './../../../environments/environment';
-import { Area, APIResponse, Project, WBS, PRJPLANH, PRJPOLAYOUT } from './../../common/data-objects';
+import { Area, APIResponse, Project, WBS, PRJPLANH, PRJPOLAYOUT, PRJPOH } from './../../common/data-objects';
 import { Injectable } from '@angular/core';
 import { catchError, map, tap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
@@ -13,23 +13,33 @@ export class DataService {
 
   constructor(private http: HttpClient) { }
 
-  getAreas (): Observable<Area[]> {
+  getInit(): Observable<PRJPOH[]> {
+    const httpOptions = {
+      headers: this.getHeaders()
+    };
+
+    return this.http.get<PRJPOH[]>(this.url + "/init.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<PRJPOH[]>('getInit', []))
+      );
+  }
+
+  getAreas(): Observable<Area[]> {
     const httpOptions = {
       headers: this.getHeaders()
     };
 
     return this.http.get<Area[]>(this.url + "/areas.php", httpOptions)
       .pipe(
-        tap(areas => console.log(`Fetched areas.`)),
-        catchError(this.handleError<Area[]>('getAreas', []))
+      catchError(this.handleError<Area[]>('getAreas', []))
       );
   }
 
-  getProjects (area?: string): Observable<Project[]> {
+  getProjects(area?: string): Observable<Project[]> {
     let params = new HttpParams();
-    if(area)
+    if (area)
       params = params.append('warea', area);
-      
+
     const httpOptions = {
       headers: this.getHeaders(),
       params: params
@@ -38,17 +48,16 @@ export class DataService {
 
     return this.http.get<Project[]>(this.url + "/projects.php", httpOptions)
       .pipe(
-        tap(areas => console.log(`Fetched projects.`)),
-        catchError(this.handleError<Project[]>('getProjects', []))
+      catchError(this.handleError<Project[]>('getProjects', []))
       );
   }
 
   getPlans(area?: string): Observable<PRJPLANH[]> {
     let params = new HttpParams();
-    if(area){
+    if (area) {
       params = params.append('warea', area);
     }
-      
+
     const httpOptions = {
       headers: this.getHeaders(),
       params: params
@@ -56,16 +65,15 @@ export class DataService {
 
     return this.http.get<PRJPLANH[]>(this.url + "/prjplanh.php", httpOptions)
       .pipe(
-        tap(areas => console.log(`Fetched plans.`)),
-        catchError(this.handleError<PRJPLANH[]>('getPlans', []))
+      catchError(this.handleError<PRJPLANH[]>('getPlans', []))
       );
   }
 
   getLayouts(area?: string): Observable<PRJPOLAYOUT[]> {
     let params = new HttpParams();
-    if(area)
+    if (area)
       params = params.append('warea', area);
-      
+
     const httpOptions = {
       headers: this.getHeaders(),
       params: params
@@ -73,18 +81,17 @@ export class DataService {
 
     return this.http.get<PRJPOLAYOUT[]>(this.url + "/layouts.php", httpOptions)
       .pipe(
-        tap(areas => console.log(`Fetched layouts.`)),
-        catchError(this.handleError<PRJPOLAYOUT[]>('getLayouts', []))
+      catchError(this.handleError<PRJPOLAYOUT[]>('getLayouts', []))
       );
   }
 
-  getWBS (area?: string, projid?: number): Observable<WBS[]> {
+  getWBS(area?: string, projid?: number): Observable<WBS[]> {
     let params = new HttpParams();
 
-    if(area)
+    if (area)
       params = params.append('warea', area);
 
-    if(projid)
+    if (projid)
       params = params.append('wprojid', projid.toString());
 
     const httpOptions = {
@@ -95,8 +102,218 @@ export class DataService {
 
     return this.http.get<WBS[]>(this.url + "/wbss.php", httpOptions)
       .pipe(
-        tap(areas => console.log(`Fetched wbs.`)),
-        catchError(this.handleError<WBS[]>('getWBS', []))
+      catchError(this.handleError<WBS[]>('getWBS', []))
+      );
+  }
+
+  getPONumbers(area?: string, projid?: number): Observable<any[]> {
+    let params = new HttpParams();
+
+    if (area)
+      params = params.append('warea', area);
+
+    if (projid)
+      params = params.append('wprojid', projid.toString());
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/ponumber.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPONumbers', []))
+      );
+  }
+
+  getReports(area: string, projid: number, ref: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wref', ref);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/poreports.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getReports', []))
+      );
+  }
+
+  getPlanrt(area: string, projid: number, plan: number, item: string, type: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wplan', plan.toString());
+    params = params.append('witem', item);
+    params = params.append('wtype', type);
+
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+    return this.http.get<any[]>(this.url + "/planrt.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPlantRT', []))
+      );
+  }
+
+  getContractDates(): Observable<any[]> {
+    let params = new HttpParams();
+
+
+    const httpOptions = {
+      headers: this.getHeaders()
+    };
+
+    return this.http.get<any[]>(this.url + "/contractdates.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getContractDates', []))
+      );
+  }
+
+  getPOMIGERR_V(area: string, projid: number, pouid: string, wwhat: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wpouid', pouid);
+    params = params.append('wwhat', wwhat);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/pomigerrv.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPOMIGERR_V', []))
+      );
+  }
+
+  checkNotPosted(area: string, projid: number): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/notposted.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('checkNotPosted', []))
+      );
+  }
+
+  getPOData(area: string, projid: number, pouid: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wpouid', pouid);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/podata.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPOData', []))
+      );
+  }
+
+  getPOH(area: string, projid: number, pouid: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wpouid', pouid);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/prjpoh.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPOH', []))
+      );
+  }
+
+  getInvoiceSummary(area: string, projid: number, status: string, fromdate: string, todate: string): Observable<any[]>  {
+
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wstatus', status);
+    params = params.append('wfromdate', fromdate);
+    params = params.append('wtodate', todate);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/invoicesumm.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getInvoiceSummary', []))
+      );
+  }
+
+  getProjectTotals(area: string, projid: number, ref: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wref', ref);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/projecttotals.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getProjectTotals', []))
+      );
+  }
+
+  getPOErrors(area: string, projid: number, wperiod: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wperiod', wperiod);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/poerrors.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPOErrors', []))
       );
   }
 
@@ -107,11 +324,53 @@ export class DataService {
 
     return this.http.post<APIResponse>(this.url + "/save/prjpoh.php", payload, httpOptions)
       .pipe(
-        tap(response => console.log(response.message)),
-        catchError(this.handleError<APIResponse>('savePRJPOH'))
+      catchError(this.handleError<APIResponse>('savePRJPOH'))
       );
   }
 
+  savePRJPOHStatus(payload: string): Observable<APIResponse> {
+    const httpOptions = {
+      headers: this.getHeaders()
+    };
+
+    return this.http.post<APIResponse>(this.url + "/save/prjpohstatus.php", payload, httpOptions)
+      .pipe(
+      catchError(this.handleError<APIResponse>('savePRJPOHStatus'))
+      );
+  }
+
+  post(): Observable<APIResponse> {
+    const httpOptions = {
+      headers: this.getHeaders()
+    };
+
+    return this.http.post<APIResponse>(this.url + "/save/post.php", null, httpOptions)
+      .pipe(
+      catchError(this.handleError<APIResponse>('post'))
+      );
+  }
+
+  updatePRJPOMIGERR(payload: string): Observable<APIResponse> {
+    const httpOptions = {
+      headers: this.getHeaders()
+    };
+
+    return this.http.post<APIResponse>(this.url + "/save/prjmigerr_update.php", payload, httpOptions)
+      .pipe(
+      catchError(this.handleError<APIResponse>('updatePRJPOMIGERR'))
+      );
+  }
+
+  deletePO(payload: string): Observable<APIResponse> {
+    const httpOptions = {
+      headers: this.getHeaders()
+    };
+
+    return this.http.post<APIResponse>(this.url + "/delete/deletepo.php", payload, httpOptions)
+      .pipe(
+      catchError(this.handleError<APIResponse>('deletePO'))
+      );
+  }
 
   private getHeaders(): HttpHeaders {
     let httpHeaders = new HttpHeaders();

@@ -1,0 +1,55 @@
+<div class="modal-body">
+  <p class="text-danger">{{ migErr.OM_DESCERR }}</p>
+  <table class="table">
+    <thead>
+      <tr style="background-color:lightgray;">
+        <th>Type</th>
+        <th>Item</th>
+        <th>Description</th>
+        <th>Unit</th>
+        <th>Date</th>
+        <th>Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <td>{{ migErr.OM_TYPE | decodeType }}</td>
+      <td>{{ migErr.OM_COL1 }}</td>
+      <td>{{ migErr.OM_COL2 }}</td>
+      <td>{{ migErr.OM_COL3 }}</td>
+      <td class="text-nowrap">{{ migErr.OM_PERIOD }}</td>
+      <td>{{ migErr.OM_COL4 }}</td>
+    </tbody>
+  </table>
+
+  <table class="table">
+    <thead>
+      <tr style="background-color:lightgray;">
+        <th>Type</th>
+        <th>Item</th>
+        <th>Description</th>
+        <th>Unit</th>
+        <th>Date</th>
+        <th>Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of planrt;" [class.highlighted]="model.planrt==item.PR_ID" style="cursor:pointer;" (click)="model.planrt = item.PR_ID;">
+        <td [hidden]="true">
+          <div class="form-check">
+            <input class="form-check-input" style="cursor:pointer;" type="radio" name="planrt" [value]="item.PR_ID" [(ngModel)]="model.planrt">
+          </div>
+        </td>
+        <td>{{ item.PR_TYPE | decodeType }}</td>
+        <td>{{ item.PR_ITEM }}</td>
+        <td>{{ item.PR_DESC }}</td>
+        <td>{{ item.PR_UNIT }}</td>
+        <td class="text-nowrap">{{ item.PR_DATE }}</td>
+        <td>{{ item.PR_RATE }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-success" (click)="save()">Save</button>
+  <button type="button" class="btn btn-outline-dark" (click)="modalRef.close('Close click')">Close</button>
+</div>

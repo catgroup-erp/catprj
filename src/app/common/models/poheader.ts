@@ -6,9 +6,11 @@ export class Poheader {
         public plan: number,
         public type: string,
         public ref: string,
-        public wbs: number,
-        public period: Date,
+        public status: string,
+        public period: string,
         public layout: number,
-        public desc: string
+        public desc: string,
+        public invdate: string,
+        public podate: any
     ) { }
 }

@@ -1,3 +1,5 @@
+import { ExcelService } from './services/global/excel.service';
+import { GlobalVarService } from './services/global/global-var.service';
 import { DataService } from './services/data/data.service';
 import { AuthService } from './services/auth/auth.service';
 import { AuthGaurdService } from './services/auth/auth-gaurd.service';
@@ -14,7 +16,7 @@ import { AppRoutingModule } from './app.routing';
 
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 
 import { NgxMaskModule } from 'ngx-mask';
@@ -30,6 +32,16 @@ import { FilterLayoutColsPipe } from './pipes/filter-layout-cols.pipe';
 
 import { MatRadioModule } from '@angular/material/radio';
 import { IsNumberPipe } from './pipes/is-number.pipe';
+import { ControlPageComponent } from './pages/control-page/control-page.component';
+import { DashPipe } from './pipes/dash.pipe';
+import { FilterErrorsPipe } from './pipes/filter-errors.pipe';
+import { LocationStrategy, HashLocationStrategy } from '@angular/common';
+import { DecodeTypePipe } from './pipes/decode-type.pipe';
+import { ReadableNumberPipe } from './pipes/readable-number.pipe';
+import { ErrorsTypeFilterPipe } from './pipes/errors-type-filter.pipe';
+import { ControlModalComponent } from './modals/control-modal/control-modal.component';
+import { NgbDateCustomParserFormatter } from './common/datepicker-format';
+import { InvoiceSummaryComponent } from './pages/invoice-summary/invoice-summary.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +52,15 @@ import { IsNumberPipe } from './pipes/is-number.pipe';
     PoheaderFormComponent,
     FilterLayoutHeadersPipe,
     FilterLayoutColsPipe,
-    IsNumberPipe
+    IsNumberPipe,
+    ControlPageComponent,
+    DashPipe,
+    FilterErrorsPipe,
+    DecodeTypePipe,
+    ReadableNumberPipe,
+    ErrorsTypeFilterPipe,
+    ControlModalComponent,
+    InvoiceSummaryComponent
   ],
   imports: [
     BrowserModule,
@@ -60,7 +80,14 @@ import { IsNumberPipe } from './pipes/is-number.pipe';
     AuthGaurdService,
     AuthService,
     DataService,
-    { provide: HTTP_INTERCEPTORS, useClass: NgProgressInterceptor, multi: true }
+    GlobalVarService,
+    ExcelService,
+    { provide: HTTP_INTERCEPTORS, useClass: NgProgressInterceptor, multi: true },
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
+    {provide: NgbDateParserFormatter, useClass: NgbDateCustomParserFormatter}
+  ],
+  entryComponents: [
+    ControlModalComponent
   ],
   bootstrap: [AppComponent]
 })

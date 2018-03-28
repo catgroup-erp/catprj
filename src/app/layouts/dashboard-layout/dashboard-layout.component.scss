@@ -13,6 +13,7 @@
   float:left;
   padding:10px;
   z-index: 0;
+  overflow:hidden;
 }
 
 .sidenav-content {
@@ -30,4 +31,8 @@
 }
 
 
-  
+@media only screen and (max-width: 574px) {
+  .sidenav-container {
+    top: 70px;
+  }
+}

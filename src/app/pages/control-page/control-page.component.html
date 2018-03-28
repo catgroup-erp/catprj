@@ -1,0 +1,221 @@
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Delete PO: {{ model.ref }}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Are you sure you want to delete this PO?</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-danger" (click)="deletePO();c('Close click');">Delete</button>
+    <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Cancel</button>
+  </div>
+</ng-template>
+
+<div class="container-fluid">
+  <div [@fade]="response.message? 'in':'out'" class="alert" [class.alert-danger]="response.status==1" [class.alert-success]="response.status==0"
+    role="alert">
+    {{ response.message }}
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <h3 class="float-left">Control</h3>
+      <button (click)="open(content)" type="button" *ngIf="isManager()" class="btn btn-danger float-right">Delete PO</button>
+      <div [hidden]="!notPosted" class="float-right mr-3">
+        <p class="text-danger float-left align-middle mr-3">Some items were not posted!</p>
+          <button (click)="post()" type="button" class="btn btn-warning float-left">POST</button>
+      </div>
+      
+      
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-md-12">
+      <form>
+        <div class="form-row">
+          <div class="form-group col-md-4 col-lg-2">
+            <label for="wref">P.O. Number</label>
+            <ng-select (change)="updateReports();model.report=null;" id="wref" [items]="ponumbers" bindLabel="OH_REF" bindValue="OH_REF"
+              name="wref" [(ngModel)]="model.ref">
+            </ng-select>
+          </div>
+
+          <div class="form-group col-md-4 col-lg-2">
+            <label for="wreport">Contract Date</label>
+            <ng-select (change)="updateErrView()" id="wreport" [items]="reports" bindLabel="OH_REPORT" bindValue="OH_POUID" name="wreport"
+              [(ngModel)]="model.report">
+            </ng-select>
+          </div>
+
+          <div class="form-group col-md-4 col-lg-2">
+            <label for="filter">Filter</label>
+            <ng-select (change)="updateErrView();" [clearable]="false" [searchable]="false" id="filter" [items]="filter" bindLabel="label" bindValue="value" name="filter"
+              [(ngModel)]="model.filter">
+            </ng-select>
+          </div>
+
+          <div class="form-group col-md-3 col-lg-2" *ngIf="errorBlockView.length>0 || podata.length>0">
+            <label for="wtype">Type</label>
+            <input class="form-control" type="text" readonly id="wtype" [value]="type | decodeType">
+          </div>
+
+
+          <div class="form-group col-md-4 col-lg-2" *ngIf="errorBlockView.length>0 || podata.length>0">
+            <legend class="col-form-label">Status</legend>
+            <mat-radio-group (change)="updateStatus()" class="mat-radio-group" name="wstatus" [(ngModel)]="model.status">
+              <mat-radio-button class="mat-radio-button mr-3" *ngFor="let st of status.st;index as i;" [value]="st.code">
+                {{ st.desc}}
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row p-4" *ngIf="errorBlockView.length>0 || podata.length>0">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center align-middle">DESCRIPTION</th>
+            <th class="text-center align-middle" *ngFor="let headCol of [6, 10, 11, 12]">
+              <ng-container *ngIf="layouts[headCol]">
+                {{ layouts[headCol].PL_DESC }}
+              </ng-container>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ptotal of prjTotals">
+            <td class="text-center align-middle" style="background-color:lightgray;font-weight:bold;">
+              <ng-container *ngIf="ptotal.SER==1">
+                PROJECT TOTAL
+              </ng-container>
+              <ng-container *ngIf="ptotal.SER==2">
+                PO TOTAL
+              </ng-container>
+            </td>
+            <ng-container *ngFor="let col of [6, 10, 11, 12]">
+              <td class="align-middle text-right">
+                <ng-container *ngIf="ptotal['COL'+col]">
+                  {{ ptotal['COL'+col] | readableNumber }}
+                </ng-container>
+              </td>
+
+            </ng-container>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="row mb-3 p-3" *ngIf="(errorBlockView | errorsTypeFilter: 'pending').length>0 && (model.filter==0 || model.filter==1 || model.filter==4)">
+    <h4 class="p-3">Error(s) Pending</h4>
+
+    <button *ngIf="false" type="button" class="btn btn-primary" (click)="downloadErrorBlock(errorBlockTable)">Download</button>
+
+    <div class="table-responsive">
+      <table class="table table-bordered" #errorBlockTable>
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center align-middle" *ngFor="let headCol of layouts | filterLayoutCols: layout">{{ headCol.PL_DESC }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of errorBlockView | errorsTypeFilter: 'pending';">
+            <td *ngFor="let col of columns" class="align-middle" [class.text-right]="(row['OM_COL'+col] | isNumber) && col!=1" [class.text-center]="(row['OM_COL'+col] | dash)=='-'">
+              {{ row['OM_COL'+col] | readableNumber |dash }}
+              <ng-container *ngIf="col==2">
+                <ul class="text-danger">
+                  <li class="error-link" (click)="openError(row)" *ngFor="let error of errors | filterErrors: row['OM_POLINEUID']">{{ error.MR_ERRDESC }}</li>
+                </ul>
+
+              </ng-container>
+            </td>
+          </tr>
+          <tr style="background-color:lightgray;font-weight:bold;">
+            <td *ngFor="let col of columns" class="align-middle" [class.text-right]="col>2" [class.text-center]="col==2">
+              <span class="text-nowrap" *ngIf="col==2; else elseBlock">ERROR(S) TOTAL: </span>
+              <ng-template #elseBlock>{{ totalErr[col] | readableNumber }}</ng-template>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row mb-3 p-3" *ngIf="(errorBlockView | errorsTypeFilter: 'cleared').length>0 && (model.filter==0 || model.filter==2)">
+    <h4 class="p-3">Error(s) Cleared</h4>
+
+
+    <div class="table-responsive">
+      <table class="table table-bordered" #errorBlockTable>
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center align-middle" *ngFor="let headCol of layouts | filterLayoutCols: layout">{{ headCol.PL_DESC }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of errorBlockView | errorsTypeFilter: 'cleared';">
+            <td *ngFor="let col of columns" class="align-middle" [class.text-right]="(row['OM_COL'+col] | isNumber) && col!=1" [class.text-center]="(row['OM_COL'+col] | dash)=='-'">
+              {{ row['OM_COL'+col] | readableNumber |dash }}
+              <ng-container *ngIf="col==2">
+                <ul class="text-success">
+                  <li *ngFor="let error of errors | filterErrors: row['OM_POLINEUID']">{{ error.MR_ERRDESC }}</li>
+                </ul>
+
+              </ng-container>
+            </td>
+          </tr>
+          <tr style="background-color:lightgray;font-weight:bold;">
+            <td *ngFor="let col of columns" class="align-middle" [class.text-right]="col>2" [class.text-center]="col==2">
+              <span class="text-nowrap" *ngIf="col==2; else elseBlock">ERROR(S) CLEARED TOTAL: </span>
+              <ng-template #elseBlock>{{ clrTotalErr[col] | readableNumber }}</ng-template>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row p-3" *ngIf="podata.length>0 && (model.filter==3 || model.filter==0)">
+    <h4 class="p-3">P.O. Data</h4>
+
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center align-middle" *ngFor="let headCol of layouts | filterLayoutCols: 1">{{ headCol.PL_DESC }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of podata;">
+            <td *ngFor="let col of columns" class="align-middle" [class.text-right]="(row['PO_COL'+col] | isNumber) && col!=1 || col==13"
+              [class.text-center]="(row['PO_COL'+col] | dash)=='-'">
+              {{ row['PO_COL'+col] | readableNumber | dash }}
+            </td>
+          </tr>
+          <tr style="background-color:lightgray;font-weight:bold;">
+            <td *ngFor="let col of columns" class="align-middle" [class.text-right]="col>2" [class.text-center]="col==2">
+              <span class="text-nowrap" *ngIf="col==2; else elseBlock">POSTED TOTAL: </span>
+              <ng-template #elseBlock>{{ total[col] | readableNumber }}</ng-template>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

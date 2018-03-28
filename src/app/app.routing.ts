@@ -1,3 +1,5 @@
+import { InvoiceSummaryComponent } from './pages/invoice-summary/invoice-summary.component';
+import { ControlPageComponent } from './pages/control-page/control-page.component';
 import { StartPageComponent } from './pages/start-page/start-page.component';
 import { AuthGaurdService } from './services/auth/auth-gaurd.service';
 import { NgModule } from '@angular/core';
@@ -16,7 +18,9 @@ export const routes: Routes = [
     component: DashboardLayoutComponent,
     canActivate: [AuthGaurdService],
     children: [
-      { path: '', component: StartPageComponent }
+      { path: '', component: StartPageComponent },
+      { path: 'control', component: ControlPageComponent },
+      { path: 'invoice-summary', component: InvoiceSummaryComponent}
     ]
   }
 

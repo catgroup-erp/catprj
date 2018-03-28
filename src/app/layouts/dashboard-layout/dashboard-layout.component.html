@@ -1,36 +1,54 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <button (click)="sideOpen=!sideOpen" class="btn btn-secondary my-2 my-sm-0 mr-3" type="button">
+    <i class="fa fa-bars"></i>
+  </button>
+
+
   <a class="navbar-brand" href="#">
-    <img [src]="catLogoUrl" height="30" class="d-inline-block align-top" alt=""> ERP PRJ
+    <img [src]="catLogoUrl" height="30" class="d-inline-block align-top" alt=""> PRJ
   </a>
 
 
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item dropdown" ngbDropdown placement="bottom-right">
-        <a class="nav-link" role="button" style="cursor:pointer;" ngbDropdownToggle>
-          <i class="fa fa-user"></i> {{ name }}
-        </a>
-        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-          <a class="dropdown-item" href="#">
-            <i class="fa fa-cog"></i> Settings</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" (click)="logout()">
-            <i class="fa fa-sign-out"></i> Logout</a>
-        </div>
-      </li>
-    </ul>
-  </div>
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+      <a class="nav-link" role="button" style="cursor:pointer;" (click)="logout()">
+        <i class="fa fa-sign-out"></i> Logout
+      </a>
+    </li>
+  </ul>
 </nav>
 
 <div class="sidenav-container">
-  <div class="sidenav">
-    <div class="nav flex-column nav-pills" aria-orientation="vertical">
-      <a routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" class="nav-link" aria-controls="v-pills-home">
-        Migration
+  <div class="sidenav" [@slide]="sideOpen? 'in':'out'">
+    <h6 style="overflow:hidden;" class="text-nowrap">{{ name }}</h6>
+    <hr>
+    <div style="overflow:hidden;" class="nav flex-column nav-pills" aria-orientation="vertical">
+      <a [routerLink]="item.route" *ngFor="let item of menu" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active"
+        class="nav-link text-nowrap" aria-controls="v-pills-home">
+        {{item.desc}}
       </a>
     </div>
   </div>
-  <div class="sidenav-content p-3">
+  <div class="sidenav-content">
+    <div class="sticky-top mb-3 p-3" style="background-color:gray;">
+      <div class="container-fluid">
+
+        <form>
+          <div class="row">
+            <div class="col-sm-4 col-md-3 col-xl-2">
+              <ng-select (change)="areaChange()" [items]="areas" bindLabel="AR_DESC" bindValue="AR_AREA" name="warea" [(ngModel)]="model.area">
+              </ng-select>
+            </div>
+
+            <div class="col-sm-8 col-md-7 col-xl-5">
+              <ng-select (change)="setProject()" [items]="projects" bindLabel="PR_DESC" bindValue="PR_PROJID" name="wprojid" [(ngModel)]="model.projid">
+              </ng-select>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </div>
     <router-outlet></router-outlet>
   </div>
 </div>

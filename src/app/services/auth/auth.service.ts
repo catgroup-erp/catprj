@@ -27,10 +27,11 @@ export class AuthService {
       .pipe(
       tap(response => {
         if (response && response.status == 0) {
-          let token = btoa(payload.username + ":" + payload.password);
+          let token = btoa(payload.username.toUpperCase()  + ":" + payload.password);
           sessionStorage.setItem('token', token);
 
-          sessionStorage.setItem('name', response.data);
+          sessionStorage.setItem('name', response.data.name);
+          sessionStorage.setItem('roles', response.data.roles);
         }
       }),
       catchError(this.handleError<APIResponse>('login'))

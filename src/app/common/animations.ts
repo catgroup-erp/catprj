@@ -1,9 +1,9 @@
 import { trigger, state, transition, style, animate } from '@angular/animations';
 
 export let slide = trigger('slide', [
-    state('in', style({ height: '100%', overflow: 'hidden' })),
-    state('out', style({ height: '0px', overflow: 'hidden' })),
-    transition('out <=> in', animate(200))
+    state('in', style({ width: '250px', display: 'block'})),
+    state('out', style({ width: '0px', display: 'none' })),
+    transition('out <=> in', animate(100))
   ]);
 
   export let fade = trigger('fade', [

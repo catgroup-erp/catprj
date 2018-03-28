@@ -3,14 +3,38 @@ export class APIResponse {
     constructor(
         public status: number,
         public message: string,
-        public data?: string
+        public data?: any
     ) { }
 }
 
-export class SelectItem {
+export class Status {
 
-    constructor(public value: string, public label: string) { }
+    public st: { code: string, desc: string }[];
+    
+    constructor() {
+        this.st = [
+            { code: 'I', desc: 'Interim' },
+            { code: 'F', desc: 'Final' },
+            { code: 'N', desc: 'Not Invoiced' }
+        ];
+    }
 }
+
+export class PRJPOH {
+    OH_AREA: string;
+    OH_PROJID: number;
+    OH_POUID: string;
+    OH_PLAN: number;
+    OH_TYPE: string;
+    OH_STATUS: string;
+    OH_REF: string;
+    OH_PERIOD: string;
+    OH_LAYOUT: number;
+    OH_DESC: string;
+    OH_INVDATE: string;
+    OH_PODATE: string;
+}
+
 
 export class Area {
     AR_ELOC: string;
