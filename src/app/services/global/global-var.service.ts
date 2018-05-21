@@ -17,13 +17,15 @@ export class GlobalVarService {
 
 
   setArea(area: string) {
-    this._area.next(area);
     this.area = area;
+    this._area.next(area);
+
   }
 
   setProject(projid: number) {
+    this.projid = projid;
     this._projid.next(projid);
-    this.projid=projid;
+
   }
 
 }

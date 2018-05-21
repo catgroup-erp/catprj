@@ -28,7 +28,9 @@ export class DashboardLayoutComponent implements OnInit {
   menu: {desc: string, route: string}[] = [
     {desc: 'Migration', route: '/'},
     {desc: 'Control', route: '/control'},
-    {desc: 'Invoice Summary Report', route: '/invoice-summary'}
+    {desc: 'Invoice Summary Report', route: '/invoice-summary'},
+    {desc: 'Mega-Invoice Report', route: '/invoice-mega'},
+    {desc: 'Budget Report', route: '/budget-format'}
   ];
 
   constructor(private authService: AuthService, private dataService: DataService, private globalVar: GlobalVarService) { }

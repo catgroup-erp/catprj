@@ -1,9 +1,9 @@
+import { ExcelService } from './../../services/global/excel.service';
 import { ActivatedRoute } from '@angular/router';
 import { DataService } from './../../services/data/data.service';
 import { GlobalVarService } from './../../services/global/global-var.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { PRJPOLAYOUT, Status, APIResponse } from '../../common/data-objects';
-import { ExcelService } from '../../services/global/excel.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ControlModalComponent } from '../../modals/control-modal/control-modal.component';
 import { fade } from './../../common/animations';
@@ -18,18 +18,20 @@ import { fade } from './../../common/animations';
 })
 export class ControlPageComponent implements OnInit {
 
+  @ViewChild('podataTable') podataTable: ElementRef;
 
   ponumbers: any[] = [];
   reports: any[] = [];
   layouts: PRJPOLAYOUT[] = [];
   prjTotals: any[] = [];
 
+  revisions: any[] = [{OH_POREV: 1}]
+
   errorBlockView: any[] = [];
   errors: any[] = [];
 
   podata: any[] = [];
 
-  columns: number[] = [];
   total: number[] = [];
   totalErr: number[] = [];
   clrTotalErr: number[] = [];
@@ -37,9 +39,12 @@ export class ControlPageComponent implements OnInit {
   notPosted: boolean = false;
 
   response: APIResponse = {} as APIResponse;
+  initialStatus: string;
+
+  loading: number = 5;
 
 
-  model: { ref: string, report: string, status: string, filter: number } = { ref: null, report: null, status: null, filter: 0 };
+  model: { ref: string, report: string, status: string, filter: number, porev: number } = { ref: null, report: null, status: null, filter: 0, porev: 0 };
 
   filter: { value: number, label: string }[] = [
     { value: 0, label: 'All' },
@@ -49,16 +54,25 @@ export class ControlPageComponent implements OnInit {
     { value: 4, label: 'All Errors Pending' }
   ];
 
+  sort: { value: number, label: string }[] = [
+    { value: 0, label: 'By Item' },
+    { value: 1, label: 'By Serial' }
+  ];
+
+  selectedSort: number = 0;
+
   area: string;
   projid: number;
 
   layout: number;
   type: string;
   period: string;
+  invdate: string;
 
   status: Status = new Status();
 
-  constructor(private excelService: ExcelService,
+  constructor(
+    private excelService: ExcelService,
     private globalVar: GlobalVarService,
     private dataService: DataService,
     private route: ActivatedRoute,
@@ -68,7 +82,7 @@ export class ControlPageComponent implements OnInit {
       this.model.ref = params['ref'];
       this.model.report = params['pouid'];
 
-      this.columns = Array(13).fill(0).map((x, i) => i + 1);
+
       this.area = this.globalVar.area;
       this.projid = this.globalVar.projid;
 
@@ -94,16 +108,16 @@ export class ControlPageComponent implements OnInit {
 
   post() {
     this.dataService.post()
-    .subscribe(response => {
-      this.response = response;
-    })
+      .subscribe(response => {
+        this.response = response;
+      })
   }
 
   init() {
     this.updatePONumbers();
 
     if (this.model.ref && this.model.report && this.area && this.projid) {
-      this.updateReports();
+      this.updateRevisions();
       this.updateErrView();
     }
     else {
@@ -124,7 +138,7 @@ export class ControlPageComponent implements OnInit {
 
             this.model.ref = row.OH_REF;
             this.model.report = row.OH_POUID;
-            this.updateReports();
+            this.updateRevisions();
             this.updateErrView();
           }
 
@@ -144,11 +158,6 @@ export class ControlPageComponent implements OnInit {
     });
   }
 
-  downloadErrorBlock(errorBlockTable) {
-
-    console.log(this.errorBlockView);
-    this.excelService.exportAsExcelFile(this.errorBlockView, this.model.ref);
-  }
 
   parseTableData(array: any[]): Array<Array<any>> {
     let temp: Array<Array<any>> = [];
@@ -172,9 +181,9 @@ export class ControlPageComponent implements OnInit {
     return temp;
   }
 
-  updateLayout() {
+  updateLayout(layoutNumber: number) {
     this.layouts;
-    this.dataService.getLayouts()
+    this.dataService.getLayoutsv(null, layoutNumber)
       .subscribe(response => {
         this.layouts = response;
       });
@@ -185,14 +194,18 @@ export class ControlPageComponent implements OnInit {
   }
 
   updateErrView() {
-    this.updateLayout();
+
+    this.loading = 0;
+    this.fetchErrors(this.period);
+
 
     this.dataService.checkNotPosted(this.area, this.projid)
-    .subscribe(response => {
-      if(Number(response[0]['COUNT(*)']) > 0) {
-        this.notPosted = true;
-      }
-    });
+      .subscribe(response => {
+        this.loading++;
+        if (Number(response[0]['COUNT(*)']) > 0) {
+          this.notPosted = true;
+        }
+      });
 
     let wwhat = null;
 
@@ -206,14 +219,21 @@ export class ControlPageComponent implements OnInit {
 
 
           this.layout = response[0].OH_LAYOUT;
+          this.updateLayout(this.layout);
           this.type = response[0].OH_TYPE;
           this.model.status = response[0].OH_STATUS;
           this.period = response[0].OH_PERIOD;
+          this.initialStatus = response[0].OH_STATUS;
+          this.invdate = response[0].OH_INVDATE;
+
+          this.loading++;
 
         }
       });
 
-    this.dataService.getPOMIGERR_V(this.area, this.projid, this.model.report, wwhat)
+    
+
+    this.dataService.getPOMIGERR_V(this.area, this.projid, this.model.report, this.model.porev, wwhat)
       .subscribe(response => {
         this.errorBlockView = response;
 
@@ -221,11 +241,15 @@ export class ControlPageComponent implements OnInit {
         this.totalErr[10] = 0;
         this.totalErr[11] = 0;
         this.totalErr[12] = 0;
+        this.totalErr[16] = 0;
+        this.totalErr[17] = 0;
 
         this.clrTotalErr[6] = 0;
         this.clrTotalErr[10] = 0;
         this.clrTotalErr[11] = 0;
         this.clrTotalErr[12] = 0;
+        this.clrTotalErr[16] = 0;
+        this.clrTotalErr[17] = 0;
 
         for (let i = 0; i < this.errorBlockView.length; i++) {
           if (this.errorBlockView[i]['OM_ACTIONIDERR']) {
@@ -234,21 +258,24 @@ export class ControlPageComponent implements OnInit {
             this.clrTotalErr[10] += Number(this.errorBlockView[i]['OM_COL10']);
             this.clrTotalErr[11] += Number(this.errorBlockView[i]['OM_COL11']);
             this.clrTotalErr[12] += Number(this.errorBlockView[i]['OM_COL12']);
+            this.clrTotalErr[16] += Number(this.errorBlockView[i]['OM_COL16']);
+            this.clrTotalErr[17] += Number(this.errorBlockView[i]['OM_COL17']);
           }
           else {
             this.totalErr[6] += Number(this.errorBlockView[i]['OM_COL6']);
             this.totalErr[10] += Number(this.errorBlockView[i]['OM_COL10']);
             this.totalErr[11] += Number(this.errorBlockView[i]['OM_COL11']);
             this.totalErr[12] += Number(this.errorBlockView[i]['OM_COL12']);
+            this.totalErr[16] += Number(this.errorBlockView[i]['OM_COL16']);
+            this.totalErr[17] += Number(this.errorBlockView[i]['OM_COL17']);
           }
 
         }
 
 
-        this.fetchErrors(this.period);
       });
 
-    this.dataService.getPOData(this.area, this.projid, this.model.report)
+    this.dataService.getPOData(this.area, this.projid, this.model.report, this.model.porev)
       .subscribe(response => {
         this.podata = response;
 
@@ -256,20 +283,26 @@ export class ControlPageComponent implements OnInit {
         this.total[10] = 0;
         this.total[11] = 0;
         this.total[12] = 0;
+        this.total[16] = 0;
+        this.total[17] = 0;
 
         for (let i = 0; i < this.podata.length; i++) {
           this.total[6] += Number(this.podata[i]['PO_COL6']);
           this.total[10] += Number(this.podata[i]['PO_COL10']);
           this.total[11] += Number(this.podata[i]['PO_COL11']);
           this.total[12] += Number(this.podata[i]['PO_COL12']);
+          this.total[16] += Number(this.podata[i]['PO_COL16']);
+          this.total[17] += Number(this.podata[i]['PO_COL17']);
         }
 
+        this.loading++;
 
       });
 
-    this.dataService.getProjectTotals(this.area, this.projid, this.model.ref)
+    this.dataService.getProjectTotals(this.area, this.projid, this.model.ref, this.model.porev)
       .subscribe(response => {
         this.prjTotals = response;
+        this.loading++;
       });
   }
 
@@ -277,11 +310,12 @@ export class ControlPageComponent implements OnInit {
     this.dataService.getPOErrors(this.area, this.projid, period)
       .subscribe(response => {
         this.errors = response;
+        this.loading++;
       });
   }
 
 
-  updateReports() {
+  updateRevisions() {
 
     for (let ponumber of this.ponumbers) {
       if (this.model.ref == ponumber.OH_REF) {
@@ -290,6 +324,18 @@ export class ControlPageComponent implements OnInit {
       }
     }
 
+    this.dataService.getPORev(this.area, this.projid, this.model.ref)
+    .subscribe(response =>
+    {
+      this.revisions = response;
+      this.model.porev = this.revisions[0].OH_POREV;
+      this.updateReports();
+    });
+
+  }
+
+  updateReports() {
+    this.model.report=null;
 
     this.reports = [];
     this.dataService.getReports(this.area, this.projid, this.model.ref)
@@ -314,12 +360,17 @@ export class ControlPageComponent implements OnInit {
     this.modalService.open(content);
   }
 
+  exportToExcel() {
+    this.excelService.exportAsExcelFile(this.podataTable.nativeElement, 'PO Data');
+  }
+
   deletePO() {
     let ap: any = {};
 
     ap['warea'] = this.area;
     ap['wprojid'] = this.projid;
     ap['wref'] = this.model.ref;
+    ap['wporev']=this.model.porev;
 
 
     let payload = Object.assign(ap);
@@ -351,6 +402,18 @@ export class ControlPageComponent implements OnInit {
       .subscribe(response => {
         this.response = response;
       });
+  }
+
+  sortPOData() {
+    if (this.selectedSort == 1) {
+      this.podata.sort(function (a, b) {
+        return a.PO_SERIAL - b.PO_SERIAL;
+      });
+    }
+    else {
+      this.podata.sort((a, b) => a.PO_COL1.localeCompare(b.PO_COL1, undefined, { numeric: true }));
+    }
+
   }
 
 }

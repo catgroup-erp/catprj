@@ -19,7 +19,8 @@ export class ReadableNumberPipe implements PipeTransform {
 
       return parts.join(".");
     }
-    return null;
+
+    return value;
   }
 
 }

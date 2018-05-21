@@ -1,0 +1,93 @@
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <h3 class="float-left">Mega-Invoice Summary</h3>
+      </div>
+    </div>
+    <hr>
+  
+    <form (ngSubmit)="submit()">
+      <div class="form-row">
+        <div class="form-group col-lg-2">
+          <label for="wfromdate">From Date</label>
+          <div class="input-group">
+            <input ngbDatepicker #d="ngbDatepicker" readonly required [(ngModel)]="model.fromdate" name="wfromdate" type="text" class="form-control"
+              id="wfromdate">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" (click)="d.toggle()" type="button">
+                <i class="fa fa-calendar"></i>
+              </button>
+            </div>
+          </div>
+  
+        </div>
+  
+        <div class="form-group col-lg-2">
+          <label for="wtodate">To Date</label>
+          <div class="input-group">
+            <input ngbDatepicker #to="ngbDatepicker" readonly required [(ngModel)]="model.todate" name="wtodate" type="text" class="form-control"
+              id="wtodate">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" (click)="to.toggle()" type="button">
+                <i class="fa fa-calendar"></i>
+              </button>
+            </div>
+          </div>
+  
+        </div>
+  
+        <div class="form-group col-lg-8">
+          <legend class="col-form-label">Status</legend>
+          <mat-radio-group class="mat-radio-group" name="wstatus" [(ngModel)]="model.status">
+            <mat-radio-button class="mat-radio-button mr-3" value="A">
+              All
+            </mat-radio-button>
+            <ng-container *ngFor="let st of status.st;index as i;">
+              <mat-radio-button class="mat-radio-button mr-3" [value]="st.code">
+                {{st.desc}}
+              </mat-radio-button>
+            </ng-container>
+          </mat-radio-group>
+        </div>
+  
+      </div>
+      <div class="form-row">
+        <button [disabled]="!formReady()" type="submit" class="btn btn-outline-primary mr-3">Submit</button>
+        <button *ngIf="report.length>0" (click)="exportToExcel()" type="button" class="btn btn-success">Excel</button>
+      </div>
+    </form>
+  
+    <div class="row mt-3" *ngIf="report.length>0">
+      <h5 class="p-3">{{ title }}</h5>
+      <table class="table table-bordered" #invoiceMega>
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center text-nowrap">Item</th>
+            <th class="text-center text-nowrap">Item Description</th>
+            <th class="text-center text-nowrap">Contract Value</th>
+            <th class="text-center text-nowrap">PC Amount</th>
+            <th class="text-center text-nowrap">PO Date</th>
+            <th class="text-center text-nowrap">Invoice Date</th>
+            <th class="text-center text-nowrap">PC Balance Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of report" [class.total-row]="item.PO_SYSITEM=='Total'">
+            <ng-container *ngIf="item.PO_SYSITEM=='Total';else elseBlock">
+              <td class="text-center text-nowrap" colspan="2">{{ item.PO_SYSITEM }}</td>
+            </ng-container>
+            <ng-template #elseBlock>
+              <td class="text-center text-nowrap">{{ item.PO_SYSITEM }}</td>
+              <td class="text-left">{{ item.PO_SYSITEMDESC }}</td>
+            </ng-template>
+  
+            <td class="text-right text-nowrap">{{ item.PO_CONTRACTVAL | readableNumber }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_AMOUNT | readableNumber }}</td>
+            <td class="text-center text-nowrap">{{ item.PO_PODATE }}</td>
+            <td class="text-center text-nowrap">{{ item.PO_INVDATE }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_AMOUNTBAL | readableNumber }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>

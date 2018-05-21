@@ -11,6 +11,8 @@ export class Poheader {
         public layout: number,
         public desc: string,
         public invdate: string,
-        public podate: any
+        public podate: any,
+        public porevyn: boolean,
+        public porev: number
     ) { }
 }

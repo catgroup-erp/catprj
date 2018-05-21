@@ -1,3 +1,5 @@
+import { BudgetFormatComponent } from './pages/budget-format/budget-format.component';
+import { InvoiceMegaComponent } from './pages/invoice-mega/invoice-mega.component';
 import { InvoiceSummaryComponent } from './pages/invoice-summary/invoice-summary.component';
 import { ControlPageComponent } from './pages/control-page/control-page.component';
 import { StartPageComponent } from './pages/start-page/start-page.component';
@@ -20,7 +22,9 @@ export const routes: Routes = [
     children: [
       { path: '', component: StartPageComponent },
       { path: 'control', component: ControlPageComponent },
-      { path: 'invoice-summary', component: InvoiceSummaryComponent}
+      { path: 'invoice-summary', component: InvoiceSummaryComponent},
+      { path: 'invoice-mega', component: InvoiceMegaComponent},
+      { path: 'budget-format', component: BudgetFormatComponent}
     ]
   }
 

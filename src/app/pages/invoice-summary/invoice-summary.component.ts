@@ -1,7 +1,9 @@
+import { Router } from '@angular/router';
+import { ExcelService } from './../../services/global/excel.service';
 import { GlobalVarService } from './../../services/global/global-var.service';
 import { DataService } from './../../services/data/data.service';
 import { Status } from './../../common/data-objects';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-invoice-summary',
@@ -13,13 +15,29 @@ export class InvoiceSummaryComponent implements OnInit {
   model: { fromdate: any, todate: any, status: string } = { fromdate: null, todate: null, status: 'A' };
   status: Status = new Status();
   report: any[] = [];
+  poitemdiff: any[] = [];
+  titleDiff: string;
+  title: string;
 
-  constructor(private dataService: DataService, private globalVar: GlobalVarService) { }
+  diffView: boolean = false;
+
+  filterContract: boolean = false;
+
+  sort: any;
+
+  @ViewChild('invoiceSummary') invoiceSummary: ElementRef;
+
+  constructor(private dataService: DataService, private globalVar: GlobalVarService, private excelService: ExcelService, private router: Router) { }
 
   ngOnInit() {
   }
 
+  onSorted(event) {
+    this.sort = event;
+  }
+
   submit() {
+    this.diffView = false;
     let fromdate = '';
 
     if (this.model.fromdate)
@@ -32,15 +50,35 @@ export class InvoiceSummaryComponent implements OnInit {
     this.dataService.getInvoiceSummary(this.globalVar.area, this.globalVar.projid,
       this.model.status, fromdate, todate)
       .subscribe(response => {
-        this.report = response;
-        console.log(this.report);
-      })
+        this.report = response.data;
+        this.title = response.title;
+      });
+
+    this.dataService.getPOITEMDIFF(this.globalVar.area, this.globalVar.projid, this.model.status, fromdate, todate)
+      .subscribe(response => {
+        this.poitemdiff = response.data;
+        this.titleDiff = response.title;
+      });
   }
 
   formReady(): boolean {
     return (this.globalVar.area != null &&
       this.globalVar.projid != null &&
       this.model.status != null);
+  }
+
+  exportToExcel() {
+    if (this.diffView) {
+      this.excelService.exportAsExcelFile(this.invoiceSummary.nativeElement, 'PO(s) Line Items Rates Difference');
+    }
+    else {
+      this.excelService.exportAsExcelFile(this.invoiceSummary.nativeElement, 'Invoice Summary');
+    }
+
+  }
+
+  poControl(ref) {
+    this.router.navigate(['/control', { ref: ref, pouid: null }]);
   }
 
 }

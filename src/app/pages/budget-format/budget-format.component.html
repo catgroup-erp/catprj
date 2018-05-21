@@ -1,0 +1,81 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h3 class="float-left">Budget</h3>
+    </div>
+  </div>
+  <hr>
+
+  <form (ngSubmit)="submit()">
+    <div class="form-row">
+      <div class="form-group col-lg-2">
+        <label for="wasat">As at Date</label>
+        <div class="input-group">
+          <input ngbDatepicker #d="ngbDatepicker" readonly required [(ngModel)]="model.asat" name="wasat" type="text" class="form-control"
+            id="wasat">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" (click)="d.toggle()" type="button">
+              <i class="fa fa-calendar"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-group col-md-4 col-lg-2">
+        <label for="wref">P.O. Number</label>
+        <ng-select (change)="setProject()" id="wref" [items]="ponumbers" bindLabel="OH_REF" bindValue="OH_REF" name="wref" [(ngModel)]="model.ref">
+        </ng-select>
+      </div>
+
+      <div class="form-group col-lg-8">
+        <legend class="col-form-label">Status</legend>
+        <mat-radio-group class="mat-radio-group" name="wstatus" [(ngModel)]="model.status">
+          <mat-radio-button class="mat-radio-button mr-3" value="A">
+            All
+          </mat-radio-button>
+          <ng-container *ngFor="let st of status.st;index as i;">
+            <mat-radio-button class="mat-radio-button mr-3" [value]="st.code">
+              {{st.desc}}
+            </mat-radio-button>
+          </ng-container>
+        </mat-radio-group>
+      </div>
+
+    </div>
+    <div class="form-row">
+      <button [disabled]="!formReady()" type="submit" class="btn btn-outline-primary mr-3">Submit</button>
+      <button *ngIf="report.length>0" (click)="exportToExcel()" type="button" class="btn btn-success">Excel</button>
+    </div>
+  </form>
+
+  <div class="row mt-3" *ngIf="report.length>0">
+    <h5 class="p-3">{{ title }}</h5>
+    <table class="table table-bordered" #invoiceSummary>
+      <thead>
+        <tr style="background-color:lightgray;">
+          <th class="text-center text-nowrap">Description</th>
+          <th class="text-center text-nowrap">Cost Code</th>
+          <th class="text-center text-nowrap">Budget</th>
+          <th class="text-center text-nowrap">Earned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr [class.total-row]="item.PX_LEVEL=='0'" [class.header-lvl1]="item.PX_LEVEL == '1'" [class.header-lvl2]="item.PX_LEVEL == '2' && !item.PX_COSTCODE" *ngFor="let item of report">
+          <ng-container *ngIf="item.PX_LEVEL=='0';else elseBlock">
+            <td class="text-center text-nowrap">{{ item.PX_DESC }}</td>
+            <td class="text-right text-nowrap text-success">{{ item.PX_CONTRACT | dash | readableNumber }}</td>
+          </ng-container>
+          <ng-template #elseBlock>
+            <td [style.paddingLeft]="(30*item.PX_LEVEL) +'px'" class="text-left text-nowrap">{{ item.PX_DESC }}</td>
+            <td class="text-center text-nowrap">{{ item.PX_COSTCODE | dash }}</td>
+          </ng-template>
+
+
+          <td class="text-right text-nowrap">{{ item.PX_BUDGET| dash | readableNumber }}</td>
+          <td class="text-right text-nowrap">{{ item.PX_EARNED | dash | readableNumber }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -9,10 +9,45 @@ export class ExcelService {
 
   constructor() { }
 
-  public exportAsExcelFile(aoa: Array<Array<any>>, excelFileName: string): void {
-    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(aoa);
-    const workbook: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, excelFileName);
+  public exportAsExcelFile(table: Element, excelFileName: string): void {
+    const workbook: XLSX.WorkBook = XLSX.utils.table_to_book(table, { raw: true });
+
+    var temp = workbook.Sheets['Sheet1'];
+
+    var split = temp['!ref'].toString().split(':');
+
+    if (split.length > 1) {
+      var result = split[1].match(/[a-zA-Z]+|[0-9]+/g);
+      console.log(result);
+
+      var startingCode: number = "A".charCodeAt(0);
+      var endCode: number = result[0].charCodeAt(0);
+
+      var startRow: number = 1;
+      var endRow: number = Number(result[1]);
+
+      console.log(startingCode, endCode, startRow, endRow);
+
+      for (let col = startingCode; col <= endCode; col++) {
+        for (let row = startRow; row <= endRow; row++) {
+          var target: string = String.fromCharCode(col) + row;
+          var item = temp[target];
+
+          if (item) {
+            let number = Number(item.v.replace(/,/g, ''));
+
+            if (number) {
+              temp[String.fromCharCode(col) + row].t = 'n';
+            }
+          }
+
+        }
+      }
+    }
+
+    workbook.Sheets['Sheet1'] = temp;
+
+    //console.log(workbook.Sheets['Sheet1']);
 
     XLSX.writeFile(workbook, excelFileName+'.xlsx');
   }

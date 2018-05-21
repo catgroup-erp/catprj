@@ -19,10 +19,20 @@ export class ControlModalComponent implements OnInit {
 
   ngOnInit() {
     this.dataService.getPlanrt(this.migErr.OM_AREA,
-      this.migErr.OM_PROJID, this.migErr.OM_PLAN, this.migErr.OM_COL1, this.migErr.OM_TYPE)
+      this.migErr.OM_PROJID, this.migErr.OM_PLAN, this.migErr.OM_POLINEUID, this.migErr.OM_TYPE)
       .subscribe(response => {
         this.planrt = response;
-        this.model.planrt = this.planrt[0].PR_ID;
+        if(this.planrt.length>0) {
+          this.model.planrt = this.planrt[0].PR_ID;
+        }
+
+        for(let item of this.planrt) {
+          if(item.PR_SELECTED == 'Y') {
+            this.model.planrt = Number(item.PR_ID);
+            break;
+          }
+        }
+        
       });
   }
 

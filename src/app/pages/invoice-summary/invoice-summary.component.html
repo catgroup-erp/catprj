@@ -43,7 +43,7 @@
             All
           </mat-radio-button>
           <ng-container *ngFor="let st of status.st;index as i;">
-            <mat-radio-button *ngIf="st.code!='N'" class="mat-radio-button mr-3" [value]="st.code">
+            <mat-radio-button class="mat-radio-button mr-3" [value]="st.code">
               {{st.desc}}
             </mat-radio-button>
           </ng-container>
@@ -52,30 +52,139 @@
 
     </div>
     <div class="form-row">
-      <button [disabled]="!formReady()" type="submit" class="btn btn-outline-success">Submit</button>
+      <button [disabled]="!formReady()" type="submit" class="btn btn-outline-primary mr-3">Submit</button>
+      <button *ngIf="report.length>0" (click)="exportToExcel()" type="button" class="btn btn-success">Excel</button>
     </div>
   </form>
 
-  <div class="row mt-3" *ngIf="report.length>0">
-    <table class="table table-bordered">
-      <thead>
-        <tr style="background-color:lightgray;">
-          <th class="text-center text-nowrap">Status</th>
-          <th class="text-center text-nowrap">Contract Value</th>
-          <th class="text-center text-nowrap">Amount</th>
-          <th class="text-center text-nowrap">Date</th>
-          <th class="text-center text-nowrap">Balance Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of report">
-          <td class="text-center text-nowrap">{{ item.PO_STATUSD }}</td>
-          <td class="text-right text-nowrap">{{ item.PO_CONTRACTVAL | readableNumber }}</td>
-          <td class="text-right text-nowrap">{{ item.PO_AMOUNT | readableNumber }}</td>
-          <td class="text-center text-nowrap">{{ item.PO_DATEMAX }}</td>
-          <td class="text-right text-nowrap">{{ item.PO_AMOUNTBAL | readableNumber }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <mat-slide-toggle *ngIf="poitemdiff.length>0" [(ngModel)]="diffView" class="mt-4">PO Line Difference View</mat-slide-toggle>
+
+  <ng-container *ngIf="!diffView; else itemDiffView">
+    <div class="row mt-3" *ngIf="report.length>0">
+      <h5 class="p-3">{{ title }}
+        <mat-slide-toggle [(ngModel)]="filterContract" class="ml-3">Difference</mat-slide-toggle>
+      </h5>
+
+      <table sortable-table (sorted)="onSorted($event)" class="table table-bordered" #invoiceSummary>
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center text-nowrap">
+              <sortable-column [is-number]="false" sortable-column="PO_STATUSD">Status</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_REF">PO Number</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              Revision
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_CONTRACTVAL">Contract Value</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_CALCAMT">Calculated Value</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_AMOUNT">PC Amount</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">PO Date</th>
+            <th class="text-center text-nowrap">Invoice Date</th>
+            <th class="text-center text-nowrap">PC Balance Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of report | contractFilter: filterContract | sortTable : sort : 'PO_SER'" [class.total-row]="item.PO_REF=='Total'">
+            <ng-container *ngIf="item.PO_REF=='Total';else elseBlock">
+              <td class="text-center text-nowrap" colspan="2">{{ item.PO_STATUSD }}</td>
+            </ng-container>
+            <ng-template #elseBlock>
+              <td class="text-center text-nowrap">{{ item.PO_STATUSD }}</td>
+              <td class="text-center text-nowrap">
+                <a (click)="poControl(item.PO_REF)">{{ item.PO_REF }}</a>
+              </td>
+            </ng-template>
+
+            <td class="text-center text-nowrap">{{ item.PO_POREV }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_CONTRACTVAL | readableNumber }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_CALCAMT | readableNumber }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_AMOUNT | readableNumber }}</td>
+            <td class="text-center text-nowrap">{{ item.PO_PODATE }}</td>
+            <td class="text-center text-nowrap">{{ item.PO_INVDATE }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_AMOUNTBAL | readableNumber }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <ng-template #itemDiffView>
+    <div class="row mt-3" *ngIf="poitemdiff.length>0">
+      <h5 class="p-3">{{ titleDiff }}</h5>
+
+      <table sortable-table (sorted)="onSorted($event)" class="table table-bordered" #invoiceSummary>
+        <thead>
+          <tr style="background-color:lightgray;">
+            <th class="text-center text-nowrap">
+              <sortable-column [is-number]="false" sortable-column="PO_STATUSD">Status</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_REF">PO Number</sortable-column>
+            </th>
+
+            <th class="text-center text-nowrap">
+              Revision
+            </th>
+
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_ITEM">Item</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_SYSITEM">System Item</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column [is-number]="false" sortable-column="PO_ITEMDESC">Item Description</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_CONTRACTVAL">Contract Value</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_CALCAMT">Calculated Value</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_RATE">Rate</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">
+              <sortable-column sortable-column="PO_SYSRATE">System Rate</sortable-column>
+            </th>
+            <th class="text-center text-nowrap">PO Date</th>
+            <th class="text-center text-nowrap">Invoice Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of poitemdiff | sortTable : sort : 'PO_SER'" [class.total-row]="item.PO_REF=='Total'">
+            <ng-container *ngIf="item.PO_REF=='Total';else elseBlock">
+              <td class="text-center text-nowrap" colspan="2">{{ item.PO_STATUSD }}</td>
+            </ng-container>
+            <ng-template #elseBlock>
+              <td class="text-center text-nowrap">{{ item.PO_STATUSD }}</td>
+              <td class="text-center text-nowrap">
+                <a (click)="poControl(item.PO_REF)">{{ item.PO_REF }}</a>
+              </td>
+            </ng-template>
+
+            <td class="text-center text-nowrap">{{ item.PO_POREV }}</td>
+            <td class="text-left text-nowrap">{{ item.PO_ITEM }}</td>
+            <td class="text-left text-nowrap">{{ item.PO_SYSITEM }}</td>
+            <td class="text-left">{{ item.PO_ITEMDESC }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_CONTRACTVAL | readableNumber }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_CALCAMT | readableNumber }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_RATE | readableNumber }}</td>
+            <td class="text-right text-nowrap">{{ item.PO_SYSRATE | readableNumber }}</td>
+            <td class="text-center text-nowrap">{{ item.PO_PODATE }}</td>
+            <td class="text-center text-nowrap">{{ item.PO_INVDATE }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
 </div>

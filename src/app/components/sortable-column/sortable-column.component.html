@@ -1,0 +1,4 @@
+<i class="fa" [class.fa-sort-numeric-asc]="isNumber" [class.fa-sort-alpha-asc]="!isNumber" style="cursor:pointer;" *ngIf="sortDirection === 'asc'"></i>
+<i class="fa" [class.fa-sort-numeric-desc]="isNumber" [class.fa-sort-alpha-desc]="!isNumber" style="cursor:pointer;" *ngIf="sortDirection === 'desc'"></i>
+<i class="fa fa-list" style="cursor:pointer;" *ngIf="sortDirection != 'desc' && sortDirection != 'asc'"></i>
+<ng-content></ng-content>

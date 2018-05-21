@@ -20,9 +20,10 @@ import { Subscription } from 'rxjs/Subscription';
   ]
 })
 export class PoheaderFormComponent implements OnInit {
-  model: Poheader = new Poheader(null, null, null, "O", null, "I", null, null, null, null, null);
+  model: Poheader = new Poheader(null, null, null, "O", null, "I", null, null, null, null, null, false, 0);
 
   projects: Project[];
+  revisions: any[] =[];
   contractdates: any[] =[];
 
   plans: PRJPLANH[];
@@ -98,11 +99,35 @@ export class PoheaderFormComponent implements OnInit {
           let podate = row.OH_PODATE.split('/');
           this.model.podate = { day: Number(podate[0]), month: Number(podate[1]), year: Number(podate[2])};
 
-          console.log(this.model.podate);
+          this.updateRevisions();
         }
 
 
       });
+  }
+
+  updateRevisions() {
+    this.dataService.getPORev(this.model.area, this.model.projid, this.model.ref)
+    .subscribe(response =>
+    {
+      this.revisions = response;
+      this.model.porev = this.revisions[0].OH_POREV;
+      
+    });
+  }
+
+  fillDates() {
+    this.updateRevisions();
+    for(let item of this.ponumbers) {
+      if(item.OH_REF == this.model.ref) {
+        this.model.period = item.OH_PERIOD;
+
+        let podate = item.OH_PODATE.split('/');
+        this.model.podate = { day: Number(podate[0]), month: Number(podate[1]), year: Number(podate[2])};
+        this.model.type = item.OH_TYPE;
+        break;
+      }
+    }
   }
 
   ngOnDestroy() {
@@ -166,7 +191,15 @@ export class PoheaderFormComponent implements OnInit {
 
     poForm.value.wpodate = poForm.value.wpodate.day + '/' + poForm.value.wpodate.month + '/' + poForm.value.wpodate.year;
 
+    if(this.model.porevyn) {
+      poForm.value.wporevyn = 'Y';
+    }
+    else {
+      poForm.value.wporevyn = 'N';
+    }
 
+
+    console.log(poForm.value);
     let payload = Object.assign(ap, poForm.value, wpomig);
     this.dataService.savePRJPOH(payload)
       .subscribe(response => {
@@ -186,6 +219,12 @@ export class PoheaderFormComponent implements OnInit {
       return true;
     }
     return false;
+  }
+
+  statusTrigger() {
+    if(this.model.status == 'N') {
+      this.model.invdate = null;
+    }
   }
 
   clip(event) {

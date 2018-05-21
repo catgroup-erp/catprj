@@ -85,6 +85,24 @@ export class DataService {
       );
   }
 
+  getLayoutsv(area?: string, layout?: number): Observable<PRJPOLAYOUT[]> {
+    let params = new HttpParams();
+    if (area)
+      params = params.append('warea', area);
+    if (layout)
+      params = params.append('wlayout', layout.toString());
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+    return this.http.get<PRJPOLAYOUT[]>(this.url + "/layoutsv.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<PRJPOLAYOUT[]>('getLayoutsv', []))
+      );
+  }
+
   getWBS(area?: string, projid?: number): Observable<WBS[]> {
     let params = new HttpParams();
 
@@ -127,6 +145,30 @@ export class DataService {
       );
   }
 
+  getPORev(area: string, projid: number, ref: string): Observable<any[]> {
+    let params = new HttpParams();
+
+    if (area)
+      params = params.append('warea', area);
+
+    if (projid)
+      params = params.append('wprojid', projid.toString());
+
+    if (ref)
+      params = params.append('wref', ref);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any[]>(this.url + "/porev.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any[]>('getPORev', []))
+      );
+  }
+
   getReports(area: string, projid: number, ref: string): Observable<any[]> {
     let params = new HttpParams();
 
@@ -146,13 +188,13 @@ export class DataService {
       );
   }
 
-  getPlanrt(area: string, projid: number, plan: number, item: string, type: string): Observable<any[]> {
+  getPlanrt(area: string, projid: number, plan: number, polineuid: string, type: string): Observable<any[]> {
     let params = new HttpParams();
 
     params = params.append('warea', area);
     params = params.append('wprojid', projid.toString());
     params = params.append('wplan', plan.toString());
-    params = params.append('witem', item);
+    params = params.append('wpolineuid', polineuid);
     params = params.append('wtype', type);
 
 
@@ -181,12 +223,13 @@ export class DataService {
       );
   }
 
-  getPOMIGERR_V(area: string, projid: number, pouid: string, wwhat: string): Observable<any[]> {
+  getPOMIGERR_V(area: string, projid: number, pouid: string, porev: number, wwhat: string): Observable<any[]> {
     let params = new HttpParams();
 
     params = params.append('warea', area);
     params = params.append('wprojid', projid.toString());
     params = params.append('wpouid', pouid);
+    params = params.append('wporev', porev.toString());
     params = params.append('wwhat', wwhat);
 
     const httpOptions = {
@@ -219,12 +262,13 @@ export class DataService {
       );
   }
 
-  getPOData(area: string, projid: number, pouid: string): Observable<any[]> {
+  getPOData(area: string, projid: number, pouid: string, porev: number): Observable<any[]> {
     let params = new HttpParams();
 
     params = params.append('warea', area);
     params = params.append('wprojid', projid.toString());
     params = params.append('wpouid', pouid);
+    params = params.append('wporev', porev.toString());
 
     const httpOptions = {
       headers: this.getHeaders(),
@@ -257,7 +301,7 @@ export class DataService {
       );
   }
 
-  getInvoiceSummary(area: string, projid: number, status: string, fromdate: string, todate: string): Observable<any[]>  {
+  getInvoiceSummary(area: string, projid: number, status: string, fromdate: string, todate: string): Observable<any> {
 
     let params = new HttpParams();
 
@@ -273,18 +317,88 @@ export class DataService {
     };
 
 
-    return this.http.get<any[]>(this.url + "/invoicesumm.php", httpOptions)
+    return this.http.get<any>(this.url + "/invoicesumm.php", httpOptions)
       .pipe(
-      catchError(this.handleError<any[]>('getInvoiceSummary', []))
+      catchError(this.handleError<any>('getInvoiceSummary'))
       );
   }
 
-  getProjectTotals(area: string, projid: number, ref: string): Observable<any[]> {
+  getPOITEMDIFF(area: string, projid: number, status: string, fromdate: string, todate: string): Observable<any> {
+
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wstatus', status);
+    params = params.append('wfromdate', fromdate);
+    params = params.append('wtodate', todate);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any>(this.url + "/poitemdiff.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any>('getPOITEMDIFF'))
+      );
+  }
+
+  getBudgetFormat(area: string, projid: number, status: string, asat: string, poref: string): Observable<any> {
+
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    if (projid) {
+      params = params.append('wprojid', projid.toString());
+    }
+
+    params = params.append('wstatus', status);
+    params = params.append('wasat', asat);
+    params = params.append('wporef', poref);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any>(this.url + "/budgetformat.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any>('getBudgetFormat'))
+      );
+  }
+
+  getInvoiceMega(area: string, projid: number, status: string, fromdate: string, todate: string): Observable<any> {
+
+    let params = new HttpParams();
+
+    params = params.append('warea', area);
+    params = params.append('wprojid', projid.toString());
+    params = params.append('wstatus', status);
+    params = params.append('wfromdate', fromdate);
+    params = params.append('wtodate', todate);
+
+    const httpOptions = {
+      headers: this.getHeaders(),
+      params: params
+    };
+
+
+    return this.http.get<any>(this.url + "/invoicemega.php", httpOptions)
+      .pipe(
+      catchError(this.handleError<any>('getInvoiceMega'))
+      );
+  }
+
+  getProjectTotals(area: string, projid: number, ref: string, porev: number): Observable<any[]> {
     let params = new HttpParams();
 
     params = params.append('warea', area);
     params = params.append('wprojid', projid.toString());
     params = params.append('wref', ref);
+    params = params.append('wporev', porev.toString());
 
     const httpOptions = {
       headers: this.getHeaders(),
